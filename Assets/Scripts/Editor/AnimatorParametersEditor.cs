@@ -60,7 +60,7 @@ public class AnimatorParametersEditor : EditorWindow
 		if (GUILayout.Button("Create File", GUI.skin.button))
 		{
 			EditorUtility.ClearProgressBar();
-			Reflection(
+			EnumReflection(
 				EditorUtility.SaveFilePanel(
 					"Save file",
 					"Assets",
@@ -91,18 +91,15 @@ public class AnimatorParametersEditor : EditorWindow
 		}
 	}
 
-	private async void Reflection(string path)
+
+	private async void EnumReflection(string path)
 	{
 		if (!string.IsNullOrEmpty(path))
 		{
 			string fileName = Path.GetFileNameWithoutExtension(path);
 			await using (FileStream stream = File.Create(path, 4096, FileOptions.Asynchronous))
 			{
-				byte[] bytes = GetTextToByte("using UnityEngine;\n\n");
-				EditorUtility.DisplayProgressBar(Title, "Initialize...", 0);
-				await stream.WriteAsync(bytes, 0, bytes.Length);
-
-				bytes = GetTextToByte(SetClassDeclaration(fileName));
+				var bytes = GetTextToByte(SetClassDeclaration(fileName));
 				EditorUtility.DisplayProgressBar(Title, "Initialize...", 1f);
 				await stream.WriteAsync(bytes, 0, bytes.Length);
 
@@ -114,6 +111,11 @@ public class AnimatorParametersEditor : EditorWindow
 
 				for (int i = 0; i < animatorControllers.Count; i++)
 				{
+					foreach (var val in parametersName)
+					{
+						val.Value.Clear();
+					}
+
 					string info = $"Create Parameters : {animatorControllers[i].name} ";
 
 					bytes = GetTextToByte(SetSubClassDeclaration(animatorControllers[i].name));
@@ -126,12 +128,13 @@ public class AnimatorParametersEditor : EditorWindow
 					for (int j = 0; j < parameters.Length; j++)
 					{
 						var key = parameters[j].name;
-						if (parametersName[parameters[j].type].Contains(parameters[j].name)) continue;
-						parametersName[parameters[j].type].Add(parameters[j].name);
+						if (parametersName[parameters[j].type].Contains(key)) continue;
+						parametersName[parameters[j].type].Add(key);
 					}
 
 					foreach (var type in parametersName)
 					{
+						if (type.Value.Count == 0) continue;
 						var typeInfo = $"{info} ({type.Key})";
 						bytes = GetTextToByte(CreateEnum(type.Key.ToString()));
 						await stream.WriteAsync(bytes, 0, bytes.Length);
@@ -145,6 +148,7 @@ public class AnimatorParametersEditor : EditorWindow
 							Thread.Sleep(200);
 						}
 						bytes = GetTextToByte(CloseEnumBrace());
+						EditorUtility.DisplayProgressBar(Title, info, 1);
 						await stream.WriteAsync(bytes, 0, bytes.Length);
 						Thread.Sleep(200);
 					}
