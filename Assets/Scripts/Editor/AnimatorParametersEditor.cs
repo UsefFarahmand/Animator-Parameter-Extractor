@@ -43,31 +43,65 @@ public class AnimatorParametersEditor : EditorWindow
 
 		so.ApplyModifiedProperties();
 
+		if (GUILayout.Button(new GUIContent("Find All", "Find all animator controllers!"), GUI.skin.button))
+		{
+			FindAllAnimatorControllers();
+		}
+		EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+
 		bool disable =
 			animatorControllers.Count == 0 ||
 			animatorControllers.Exists(x => x == null) ||
 			animatorControllers.Count != animatorControllers.Distinct().Count();
 
 		if (disable) HelpBox();
-
-
-		if (GUILayout.Button(new GUIContent("Find All", "Find all animator controllers!"), GUI.skin.button))
-		{
-			FindAllAnimatorControllers();
-		}
-
 		EditorGUI.BeginDisabledGroup(disable);
 		if (GUILayout.Button("Create File", GUI.skin.button))
 		{
 			EditorUtility.ClearProgressBar();
-			EnumReflection(
-				EditorUtility.SaveFilePanel(
-					"Save file",
-					"Assets",
-					"AnimatorParameter",
-					"cs"
-					)
-				);
+
+			int option = EditorUtility.DisplayDialogComplex("Unsaved Changes",
+			"Do you want to save the changes you made before quitting?",
+			"Enum",
+			"String",
+			"Cancel");
+
+			switch (option)
+			{
+				// Enum.
+				case 0:
+					EnumReflection(
+						EditorUtility.SaveFilePanel(
+							"Save file",
+							"Assets",
+							"AnimatorParameter",
+							"cs"
+							)
+						);
+					break;
+
+				// String.
+				case 1:
+					StringReflection(
+						EditorUtility.SaveFilePanel(
+							"Save file",
+							"Assets",
+							"AnimatorParameter",
+							"cs"
+							)
+						);
+					break;
+
+				// Cancel.
+				case 2:
+					break;
+
+				default:
+					Debug.LogError("Unrecognized option.");
+					break;
+			}
+
+
 		}
 		EditorGUI.EndDisabledGroup();
 	}
@@ -91,6 +125,54 @@ public class AnimatorParametersEditor : EditorWindow
 		}
 	}
 
+	private async void StringReflection(string path)
+	{
+		if (!string.IsNullOrEmpty(path))
+		{
+			string fileName = Path.GetFileNameWithoutExtension(path);
+			await using (FileStream stream = File.Create(path, 4096, FileOptions.Asynchronous))
+			{
+				var bytes = GetTextToByte(SetClassDeclaration(fileName));
+				EditorUtility.DisplayProgressBar(Title, "Initialize...", 1f);
+				await stream.WriteAsync(bytes, 0, bytes.Length);
+
+				for (int i = 0; i < animatorControllers.Count; i++)
+				{
+					string info = $"Create Parameters : {animatorControllers[i].name} ";
+
+					bytes = GetTextToByte(SetSubClassDeclaration(animatorControllers[i].name));
+					EditorUtility.DisplayProgressBar(Title, info, 0f);
+					await stream.WriteAsync(bytes, 0, bytes.Length);
+					Thread.Sleep(250);
+
+					AnimatorControllerParameter[] parameters = animatorControllers[i].parameters;
+
+					for (int j = 0; j < parameters.Length; j++)
+					{
+						bytes = GetTextToByte(SetParamDeclaration(parameters[j].name));
+						EditorUtility.DisplayProgressBar(Title, info, (float)j / parameters.Length);
+						await stream.WriteAsync(bytes, 0, bytes.Length);
+						Thread.Sleep(200);
+					}
+
+					bytes = GetTextToByte(CloseSubClassBrace());
+					EditorUtility.DisplayProgressBar(Title, info, 1);
+					await stream.WriteAsync(bytes, 0, bytes.Length);
+					Thread.Sleep(250);
+				}
+
+				bytes = GetTextToByte(CloseClassBrace());
+				EditorUtility.DisplayProgressBar(Title, "Close File...", 1);
+				await stream.WriteAsync(bytes, 0, bytes.Length);
+				stream.Close();
+				await stream.DisposeAsync();
+			}
+
+			EditorUtility.ClearProgressBar();
+			EditorUtility.DisplayDialog(Title, $"Create Animator Reflection \nPath : {Path.GetRelativePath("Assets", path)}", "Okay");
+			AssetDatabase.Refresh();
+		}
+	}
 
 	private async void EnumReflection(string path)
 	{
@@ -184,9 +266,15 @@ public class AnimatorParametersEditor : EditorWindow
 		return $"\tpublic static class {str} " + "{ \n";
 	}
 
-	private string CreateEnum(string name)
+	private string SetParamDeclaration(string text)
 	{
-		string str = ReplaceNotValidChar(name);
+		string str = ReplaceNotValidChar(text);
+		return $"\t\tpublic const string {str} = \"{str}\";\n";
+	}
+
+	private string CreateEnum(string text)
+	{
+		string str = ReplaceNotValidChar(text);
 		return $"\t\tpublic enum {str} " + " \n\t\t{ \n";
 	}
 

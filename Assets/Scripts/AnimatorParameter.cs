@@ -57,12 +57,3 @@ public static class AnimatorParameter {
 		}
 	}
 }
-
-
-public static class AnimatorParameterString
-{
-	public static class NPC
-	{
-		public const string IsTalking = "IsTalking";
-	}
-}
