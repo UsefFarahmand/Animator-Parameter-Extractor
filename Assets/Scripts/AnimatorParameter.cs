@@ -1,59 +1,79 @@
-public static class AnimatorParameter { 
-	public static class Enemy { 
-		public enum Bool  
-		{ 
-			Scream,
-		}
-		public enum Trigger  
-		{ 
-			Death,
-			Attack,
-		}
+public static class AnimatorParameter 
+{ 
+	public enum Enemy  
+	{ 
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Death,
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Attack,
+		/// <summary>
+		/// Parameter Type: Bool
+		/// </summary>
+		Scream,
 	}
-
-	public static class Evil_Wizard { 
-		public enum Int  
-		{ 
-			Life,
-			Speed,
-		}
-		public enum Bool  
-		{ 
-			IsCasting,
-		}
-		public enum Trigger  
-		{ 
-			Death,
-			Attack,
-			Evil_Laugh,
-		}
+	public enum Evil_Wizard  
+	{ 
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Death,
+		/// <summary>
+		/// Parameter Type: Int
+		/// </summary>
+		Life,
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Attack,
+		/// <summary>
+		/// Parameter Type: Int
+		/// </summary>
+		Speed,
+		/// <summary>
+		/// Parameter Type: Bool
+		/// </summary>
+		IsCasting,
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Evil_Laugh,
 	}
-
-	public static class Hero { 
-		public enum Float  
-		{ 
-			Life,
-			Speed,
-		}
-		public enum Bool  
-		{ 
-			IsJumping,
-		}
-		public enum Trigger  
-		{ 
-			Attack,
-			Wave,
-		}
+	public enum Hero  
+	{ 
+		/// <summary>
+		/// Parameter Type: Float
+		/// </summary>
+		Life,
+		/// <summary>
+		/// Parameter Type: Float
+		/// </summary>
+		Speed,
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Attack,
+		/// <summary>
+		/// Parameter Type: Bool
+		/// </summary>
+		IsJumping,
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Wave,
 	}
-
-	public static class NPC { 
-		public enum Bool  
-		{ 
-			IsTalking,
-		}
-		public enum Trigger  
-		{ 
-			Surprised,
-		}
+	public enum NPC  
+	{ 
+		/// <summary>
+		/// Parameter Type: Bool
+		/// </summary>
+		IsTalking,
+		/// <summary>
+		/// Parameter Type: Trigger
+		/// </summary>
+		Surprised,
 	}
 }

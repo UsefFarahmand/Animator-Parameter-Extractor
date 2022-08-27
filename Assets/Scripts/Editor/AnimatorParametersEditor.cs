@@ -60,8 +60,8 @@ public class AnimatorParametersEditor : EditorWindow
 		{
 			EditorUtility.ClearProgressBar();
 
-			int option = EditorUtility.DisplayDialogComplex("Unsaved Changes",
-			"Do you want to save the changes you made before quitting?",
+			int option = EditorUtility.DisplayDialogComplex("",
+			"",
 			"Enum",
 			"String",
 			"Cancel");
@@ -149,6 +149,11 @@ public class AnimatorParametersEditor : EditorWindow
 
 					for (int j = 0; j < parameters.Length; j++)
 					{
+						//summery
+						bytes = GetTextToByte(SetValueSummary(parameters[j].type.ToString()));
+						await stream.WriteAsync(bytes, 0, bytes.Length);
+						Thread.Sleep(200);
+						//variable
 						bytes = GetTextToByte(SetParamDeclaration(parameters[j].name));
 						EditorUtility.DisplayProgressBar(Title, info, (float)j / parameters.Length);
 						await stream.WriteAsync(bytes, 0, bytes.Length);
@@ -200,45 +205,58 @@ public class AnimatorParametersEditor : EditorWindow
 
 					string info = $"Create Parameters : {animatorControllers[i].name} ";
 
-					bytes = GetTextToByte(SetSubClassDeclaration(animatorControllers[i].name));
+					bytes = GetTextToByte(SetEnum(animatorControllers[i].name));
 					EditorUtility.DisplayProgressBar(Title, info, 0f);
 					await stream.WriteAsync(bytes, 0, bytes.Length);
 					Thread.Sleep(250);
 
 					AnimatorControllerParameter[] parameters = animatorControllers[i].parameters;
-
+					
 					for (int j = 0; j < parameters.Length; j++)
 					{
 						var key = parameters[j].name;
 						if (parametersName[parameters[j].type].Contains(key)) continue;
 						parametersName[parameters[j].type].Add(key);
-					}
 
-					foreach (var type in parametersName)
-					{
-						if (type.Value.Count == 0) continue;
-						var typeInfo = $"{info} ({type.Key})";
-						bytes = GetTextToByte(CreateEnum(type.Key.ToString()));
+						//summery
+						bytes = GetTextToByte(SetValueSummary(parameters[j].type.ToString()));
 						await stream.WriteAsync(bytes, 0, bytes.Length);
 						Thread.Sleep(200);
-						for (int k = 0; k < type.Value.Count; k++)
-						{
-							string para = type.Value[k];
-							bytes = GetTextToByte(CreateEnumValue(para));
-							EditorUtility.DisplayProgressBar(Title, typeInfo, (float)k / type.Value.Count);
-							await stream.WriteAsync(bytes, 0, bytes.Length);
-							Thread.Sleep(200);
-						}
-						bytes = GetTextToByte(CloseEnumBrace());
-						EditorUtility.DisplayProgressBar(Title, info, 1);
+						//value
+						bytes = GetTextToByte(SetEnumValue(parameters[j].name));
 						await stream.WriteAsync(bytes, 0, bytes.Length);
 						Thread.Sleep(200);
+						//end enum
 					}
-
-					bytes = GetTextToByte(CloseSubClassBrace());
+					bytes = GetTextToByte(CloseEnumBrace());
 					EditorUtility.DisplayProgressBar(Title, info, 1);
 					await stream.WriteAsync(bytes, 0, bytes.Length);
-					Thread.Sleep(250);
+					Thread.Sleep(200);
+					//foreach (var type in parametersName)
+					//{
+					//	if (type.Value.Count == 0) continue;
+					//	var typeInfo = $"{info} ({type.Key})";
+					//	bytes = GetTextToByte(SetEnum(type.Key.ToString()));
+					//	await stream.WriteAsync(bytes, 0, bytes.Length);
+					//	Thread.Sleep(200);
+					//	for (int k = 0; k < type.Value.Count; k++)
+					//	{
+					//		string para = type.Value[k];
+					//		bytes = GetTextToByte(SetEnumValue(para));
+					//		EditorUtility.DisplayProgressBar(Title, typeInfo, (float)k / type.Value.Count);
+					//		await stream.WriteAsync(bytes, 0, bytes.Length);
+					//		Thread.Sleep(200);
+					//	}
+					//	bytes = GetTextToByte(CloseEnumBrace());
+					//	EditorUtility.DisplayProgressBar(Title, info, 1);
+					//	await stream.WriteAsync(bytes, 0, bytes.Length);
+					//	Thread.Sleep(200);
+					//}
+
+					//bytes = GetTextToByte(CloseSubClassBrace());
+					//EditorUtility.DisplayProgressBar(Title, info, 1);
+					//await stream.WriteAsync(bytes, 0, bytes.Length);
+					//Thread.Sleep(250);
 				}
 
 				bytes = GetTextToByte(CloseClassBrace());
@@ -257,13 +275,13 @@ public class AnimatorParametersEditor : EditorWindow
 	private string SetClassDeclaration(string text)
 	{
 		string str = ReplaceNotValidChar(text);
-		return $"public static class {str} " + "{ \n";
+		return $"public static class {str} " + "\n{ \n";
 	}
 
 	private string SetSubClassDeclaration(string text)
 	{
 		string str = ReplaceNotValidChar(text);
-		return $"\tpublic static class {str} " + "{ \n";
+		return $"\tpublic static class {str} " + "\n{ \n";
 	}
 
 	private string SetParamDeclaration(string text)
@@ -272,23 +290,33 @@ public class AnimatorParametersEditor : EditorWindow
 		return $"\t\tpublic const string {str} = \"{str}\";\n";
 	}
 
-	private string CreateEnum(string text)
+	private string SetEnum(string text)
 	{
 		string str = ReplaceNotValidChar(text);
-		return $"\t\tpublic enum {str} " + " \n\t\t{ \n";
+		return $"\tpublic enum {str} " + " \n\t{ \n";
 	}
 
-	private string CreateEnumValue(string text)
+	private string SetEnumValue(string text)
 	{
 		string str = ReplaceNotValidChar(text);
-		return $"\t\t\t{str},\n";
+		return $"\t\t{str},\n";
+	}
+
+	private string SetEnumSummary(string text)
+	{
+		return $"\t/// <summary>\n\t/// Animator Controller: {text}\n\t/// </summary>\n";
+	}
+
+	private string SetValueSummary(string text)
+	{
+		return $"\t\t/// <summary>\n\t\t/// Parameter Type: {text}\n\t\t/// </summary>\n";
 	}
 
 	private string CloseClassBrace() => "}\n";
 
 	private string CloseSubClassBrace() => "\t}\n\n";
 
-	private string CloseEnumBrace() => "\t\t}\n";
+	private string CloseEnumBrace() => "\t}\n";
 
 	private byte[] GetTextToByte(string text)
 	{
