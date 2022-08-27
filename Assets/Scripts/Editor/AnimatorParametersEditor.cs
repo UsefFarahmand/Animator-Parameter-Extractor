@@ -60,8 +60,8 @@ public class AnimatorParametersEditor : EditorWindow
 		{
 			EditorUtility.ClearProgressBar();
 
-			int option = EditorUtility.DisplayDialogComplex("",
-			"",
+			int option = EditorUtility.DisplayDialogComplex("Output type",
+			"Specify the output type:",
 			"Enum",
 			"String",
 			"Cancel");
