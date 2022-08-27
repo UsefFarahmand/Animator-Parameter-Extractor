@@ -42,7 +42,7 @@ You now click the Button **'Create File'** and it will open Output type Dialog, 
 ### File
 
 This is the Generate File at the end of the Reflection.
-- [Enum type](/Assets/Scripts/AnimatorParameter.cs)
+- [Enum type](/Assets/Animator%20Parameter%20Extractor/Example/AnimatorParameter.cs)
 ``` C#
 public static class AnimatorParameter 
 { 
@@ -125,7 +125,7 @@ public static class AnimatorParameter
 }
 ```
 
-- [String type](/Assets/Scripts/AnimatorParameterString.cs)
+- [String type](/Assets/Animator%20Parameter%20Extractor/Example/AnimatorParameterString.cs)
 ``` C#
 public static class AnimatorParameter
 {
