@@ -1,4 +1,6 @@
 # Animator-Parameter-Extractor
+[![Unity 2020.3+](https://img.shields.io/badge/unity-2020.3%2B-blue.svg)](https://unity3d.com/get-unity/download)
+
 A Unity Editor Tool that create a C# script with in input a list of Animator Controller
 ![MainImage](/Readme%20Images/Animator%20Parameter%20Extractor.png)
 ___
